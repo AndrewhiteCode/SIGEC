@@ -1,0 +1,16 @@
+﻿Date,Temperaturas núcleo (avg) [°C],Core0 (CCD1) [°C],Core1 (CCD1) [°C],Core2 (CCD1) [°C],Core3 (CCD1) [°C],Core4 (CCD1) [°C],Core5 (CCD1) [°C],Core6 (CCD1) [°C],Core7 (CCD1) [°C],Relojes núcleo (avg) [MHz],Uso núcleo (avg) [%],Uso núcleo (avg) [%]
+4.7.2025,33.2,34.9,33.9,34.2,34.2,32.1,32.3,31.9,32.2,2500.0,1.7,1.9
+4.7.2025,33.2,34.9,33.9,34.2,34.2,32.1,32.3,31.9,32.2,4200.0,1.7,1.9
+4.7.2025,59.3,59.2,61.1,58.6,60.2,59.5,56.9,60.7,58.0,4200.0,37.5,54.4
+4.7.2025,84.9,79.4,87.2,82.7,84.8,85.9,82.7,90.9,85.3,4200.0,100.0,99.5
+4.7.2025,86.2,81.1,88.2,84.8,86.1,87.5,83.7,92.1,86.3,4200.0,100.0,99.5
+4.7.2025,86.2,81.1,88.2,84.8,86.1,87.5,83.7,92.1,86.3,4200.0,100.0,99.5
+4.7.2025,87.9,82.5,90.2,86.6,87.8,89.1,85.2,93.6,88.0,4200.0,100.0,99.5
+
+4.7.2025,87.9,82.5,90.2,86.6,87.8,89.1,85.2,93.6,88.0,4200.0,100.0,99.5
+4.7.2025,87.9,82.5,90.2,86.6,87.8,89.1,85.2,93.6,88.0,4200.0,100.0,99.5
+4.7.2025,87.9,82.5,90.2,86.6,87.8,89.1,85.2,93.6,88.0,4200.0,100.0,99.5
+
+
+Date,Temperaturas nÃºcleo (avg) [Â°C],Core0 (CCD1) [Â°C],Core1 (CCD1) [Â°C],Core2 (CCD1) [Â°C],Core3 (CCD1) [Â°C],Core4 (CCD1) [Â°C],Core5 (CCD1) [Â°C],Core6 (CCD1) [Â°C],Core7 (CCD1) [Â°C],Relojes nÃºcleo (avg) [MHz],Uso nÃºcleo (avg) [%],UtilizaciÃ³n nÃºcleo (avg) [%]
+,CPU [#0]: AMD Ryzen 7 3700X: Enhanced,CPU [#0]: AMD Ryzen 7 3700X: Enhanced,CPU [#0]: AMD Ryzen 7 3700X: Enhanced,CPU [#0]: AMD Ryzen 7 3700X: Enhanced,CPU [#0]: AMD Ryzen 7 3700X: Enhanced,CPU [#0]: AMD Ryzen 7 3700X: Enhanced,CPU [#0]: AMD Ryzen 7 3700X: Enhanced,CPU [#0]: AMD Ryzen 7 3700X: Enhanced,CPU [#0]: AMD Ryzen 7 3700X: Enhanced,CPU [#0]: AMD Ryzen 7 3700X,CPU [#0]: AMD Ryzen 7 3700X,CPU [#0]: AMD Ryzen 7 3700X

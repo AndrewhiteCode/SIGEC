@@ -5,7 +5,11 @@ import plotly.express as px
 import glob
 
 # 📂 Ruta base
-ruta_base = r'C:\Users\Andres\Desktop\MAT2\data'
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent  # Va a raíz del repo
+ruta_base = BASE_DIR / "data"
+
 archivos = glob.glob(ruta_base + '/**/*.csv', recursive=True)
 
 # 🔄 Leer todos los CSVs

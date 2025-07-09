@@ -10,7 +10,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent  # Va a raíz del repo
 ruta_base = BASE_DIR / "data"
 
-archivos = glob.glob(ruta_base + '/**/*.csv', recursive=True)
+archivos = ruta_base.rglob("*.csv")
 
 # 🔄 Leer todos los CSVs
 dfs = []

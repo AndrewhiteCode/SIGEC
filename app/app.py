@@ -2,16 +2,27 @@ import streamlit as st
 import pandas as pd
 import glob
 import os
+import plotly.express as px
 
 import graficas_globales
 import graficas_sala
 
 st.set_page_config(page_title="SIGEC", layout="wide")
 
+st.markdown("""
+    <h1 style='text-align: center; color: #4CAF50; font-size: 48px;'>
+        🧮 S.I.G.E.C
+    </h1>
+    <h4 style='text-align: center;'>
+        Sistema Interactivo para Graficación Estadística Computacional
+    </h4>
+""", unsafe_allow_html=True)
+
 # 🟢 Si no hay page: que abra Home por defecto
 if 'page' not in st.session_state:
     st.session_state.page = 'home'
 
+# Estilo Botones
 st.sidebar.markdown(
     """
     <style>
@@ -43,22 +54,28 @@ def clasificar_cpu(cpu_full):
     else:
         return 'Intel Core i5-6200U'
 
-# 🟢 Sidebar fijo con KEYS ÚNICOS
+# Botones Sidebar
 st.sidebar.title('Menú')
-if st.sidebar.button('🏠 Home', key="home_btn"):
+if st.sidebar.button('🏠 Home', key='home'):
     st.session_state.page = 'home'
-if st.sidebar.button('Individual', key="individual_btn"):
+if st.sidebar.button('Individual', key='individual'):
     st.session_state.page = 'sala'
-if st.sidebar.button('📊 Comparación', key="comparacion_btn"):
+if st.sidebar.button('📊 Comparación', key='comparacion'):
     st.session_state.page = 'comparacion'
-if st.sidebar.button('📝 Resumen', key="resumen_btn"):
+if st.sidebar.button('📝 Resumen', key='resumen'):
     st.session_state.page = 'resumen'
+if st.sidebar.button('ℹ️ Información', key='info'):
+    st.session_state.page = 'info'
 
 # ===============================
 # HOME (Gráficas Globales)
 # ===============================
 if st.session_state.page == 'home':
     st.header('📊 Gráficas Globales Interactivas')
+    st.markdown("""
+    En esta sección puedes ver gráficos generales que muestran cómo se comportan todos los computadores de forma conjunta.
+    Estas gráficas permiten observar tendencias de temperatura, velocidad y uso de los procesadores durante las pruebas.
+    """)
 
     st.plotly_chart(graficas_globales.grafica_temperatura())
     st.plotly_chart(graficas_globales.grafica_relojes())
@@ -71,6 +88,11 @@ if st.session_state.page == 'home':
 # ===============================
 elif st.session_state.page == 'sala':
     st.header("🔍 Análisis por Computador")
+    st.markdown("""
+    Aquí puedes elegir un computador específico para ver en detalle cómo ha funcionado.
+    Podrás observar sus temperaturas, velocidad del procesador y nivel de uso a lo largo del tiempo.
+    """)
+
 
     DATA_DIR = "./data"
 
@@ -113,7 +135,6 @@ elif st.session_state.page == 'sala':
 
     fecha_inicio = df['Date'].min().strftime("%Y-%m-%d") if 'Date' in df.columns else 'Sin fecha'
 
-    # === Mostrar Info ===
     st.subheader(f"📄 Información del Computador")
     st.markdown(f"""
     - **Nombre archivo:** `{archivo}`
@@ -121,7 +142,6 @@ elif st.session_state.page == 'sala':
     - **Fecha de muestra:** `{fecha_inicio}`
     """)
 
-    # === Graficas ===
     st.subheader("🌡️ Temperatura núcleo")
     st.plotly_chart(graficas_sala.grafica_temperatura(df))
 
@@ -136,6 +156,11 @@ elif st.session_state.page == 'sala':
 # ===============================
 elif st.session_state.page == 'resumen':
     st.header("📑 Resumen General de Computadores")
+    st.markdown("""
+    Esta sección muestra un resumen de todos los computadores analizados.
+    Aquí encontrarás conclusiones automáticas sobre cuál es el mejor, cuál alcanza la mayor temperatura y cuál es más eficiente.
+    """)
+
 
     DATA_DIR = "./data"
     resumen = []
@@ -147,7 +172,6 @@ elif st.session_state.page == 'resumen':
         archivos = glob.glob(os.path.join(sala_path, "*.csv"))
         for archivo in archivos:
             df = pd.read_csv(archivo, encoding="utf-8-sig")
-            # Detectar CPU
             cpu_name = 'Desconocido'
             idx_cpu = df.apply(lambda row: row.astype(str).str.contains('CPU').any(), axis=1)
             if idx_cpu.any():
@@ -195,8 +219,11 @@ elif st.session_state.page == 'resumen':
 # ===============================
 elif st.session_state.page == 'comparacion':
     st.header("🔎 Comparación de Computadores")
+    st.markdown("""
+    En esta parte puedes seleccionar varios computadores y compararlos en gráficos interactivos.
+    Así puedes ver fácilmente las diferencias de temperatura, velocidad y uso entre ellos.
+    """)
 
-    import plotly.express as px
 
     DATA_DIR = "./data"
 
@@ -313,4 +340,73 @@ elif st.session_state.page == 'comparacion':
         - 🔥 **Mayor temperatura máxima alcanzada**: `{peor_temp_pc['CPU']}` en sala `{peor_temp_pc['Sala']}` (`{peor_temp_pc['PC']}`) con `{peor_temp_pc['Temp_Max']:.2f} °C`.
         - ⚡ **Procesador más eficiente (mayor reloj promedio)**: `{mejor_reloj_pc['CPU']}` en sala `{mejor_reloj_pc['Sala']}` (`{mejor_reloj_pc['PC']}`) con `{mejor_reloj_pc['Reloj_Promedio']:.2f} MHz`.
         """)
+
+# ===============================
+# INFORMACIÓN
+# ===============================
+elif st.session_state.page == 'info':
+    st.markdown("""
+   
+    ### 🎯 **¿Para qué sirve esta aplicación?**
+
+    **S.I.G.E.C** es una herramienta diseñada para **ayudar a analizar y entender el rendimiento de varios computadores** de forma sencilla y visual.  
+    Permite ver, comparar y resumir datos reales de funcionamiento de procesadores, como su **temperatura**, **velocidad de reloj** y **uso de recursos**
+    durante pruebas de esfuerzo.
+
+    Esta aplicación está pensada para estudiantes, docentes y cualquier persona interesada en conocer cómo se comportan los equipos de nuestra Facultad,
+    **sin necesidad de tener conocimientos avanzados en computación**.
+
+    ---
+
+    ### 🗂️ **Funciones principales**
+
+    ✅ **1. Gráficas Globales**  
+    Muestra gráficos generales de todos los computadores. Permite observar tendencias generales de temperatura, velocidad y uso de los núcleos.
+
+    ✅ **2. Análisis Individual**  
+    Permite seleccionar un computador específico para ver sus datos de forma detallada. Ideal para verificar si algún equipo necesita mantenimiento o revisión.
+
+    ✅ **3. Comparación**  
+    Permite elegir varios computadores (mínimo 2, máximo 10) y comparar su rendimiento en gráficos interactivos. 
+    Así se puede ver cuál trabaja mejor o cuál podría tener problemas.
+
+    ✅ **4. Resumen**  
+    Entrega conclusiones automáticas. Por ejemplo, muestra cuál es el computador con mejor rendimiento, cuál se calienta más y cuál es más eficiente.
+
+
+    ---
+
+    ### 🔍 **Importancia**
+
+    Con **S.I.G.E.C**, cualquier persona puede tomar **decisiones informadas** sobre el uso y mantenimiento de los computadores,
+    ayudando a **optimizar recursos**, **detectar fallas** y **planificar mejoras**.  
+    Además, fomenta el uso de la estadística aplicada y la toma de decisiones basada en datos reales, algo fundamental en la ingeniería y la educación moderna.
+    
+    Este proyecto fue creado especialmente para la asignatura de **Matemática Aplicada II** de la carrera de **Ingeniería en Computación e Informática** del Plan Común de la **Universidad de Magallanes**.
+    
+    Nuestro objetivo es facilitar el análisis estadístico mediante gráficas interactivas, permitiendo tomar decisiones basadas en datos reales.  
+    La muestra de estos datos fue tomada entre el **03 de julio de 2025** y el **04 de julio de 2025**, por lo que en la actualidad los valores pueden variar.
+    
+    **Objetivo final:**  
+    Implementar un método de recolección de datos en tiempo real para disponer de información actualizada a petición del usuario.
+    
+    
+    **Autores:**  
+    - **Andrés Felipe Barbosa Conde**  
+      Técnico Superior en Análisis de Sistemas Computacionales (2024) — Universidad de Magallanes, Chile.  
+      Estudiante regular de Ingeniería en Computación e Informática (2025) — Universidad de Magallanes, Chile.
+    
+    - **Iván Ignacio Sebastián Gallardo Barría**  
+      Estudiante regular de Ingeniería en Computación e Informática (2025) — Universidad de Magallanes, Chile.
+    
+    **Institución:**  
+    Universidad de Magallanes — Facultad de Ingeniería.
+    
+    **Contacto:**  
+    - abarbosa@umagl.cl  
+    - ivangall@umag.cl
+    
+    **Versión:** `2.0`
+    """)
+
 

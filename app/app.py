@@ -1,3 +1,8 @@
+# Cambios clave:
+# - En Individual (sala): filtra df_filtrado = df[df['Tiempo'] <= 10]
+# - En Comparación: filtra cada df antes de concatenar
+# - El resto se mantiene igual
+
 import streamlit as st
 import pandas as pd
 import glob
@@ -18,13 +23,10 @@ st.markdown("""
     </h4>
 """, unsafe_allow_html=True)
 
-# 🟢 Si no hay page: que abra Home por defecto
 if 'page' not in st.session_state:
     st.session_state.page = 'home'
 
-# Estilo Botones
-st.sidebar.markdown(
-    """
+st.sidebar.markdown("""
     <style>
     div.stButton > button:first-child {
         background-color: #4CAF50;
@@ -34,11 +36,8 @@ st.sidebar.markdown(
         font-size: 18px;
     }
     </style>
-    """,
-    unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
 
-# ✅ Clasificador de CPU
 def clasificar_cpu(cpu_full):
     cpu_full = cpu_full.lower()
     if '13th' in cpu_full or '13700' in cpu_full:
@@ -54,7 +53,6 @@ def clasificar_cpu(cpu_full):
     else:
         return 'Intel Core i5-6200U'
 
-# Botones Sidebar
 st.sidebar.title('Menú')
 if st.sidebar.button('🏠 Home', key='home'):
     st.session_state.page = 'home'
@@ -67,9 +65,6 @@ if st.sidebar.button('📝 Resumen', key='resumen'):
 if st.sidebar.button('ℹ️ Información', key='info'):
     st.session_state.page = 'info'
 
-# ===============================
-# HOME (Gráficas Globales)
-# ===============================
 if st.session_state.page == 'home':
     st.header('📊 Gráficas Globales Interactivas')
     st.markdown("""
@@ -83,16 +78,12 @@ if st.session_state.page == 'home':
     st.plotly_chart(graficas_globales.grafica_boxplot_temp())
     st.plotly_chart(graficas_globales.grafica_dispersion_temp_uso())
 
-# ===============================
-# SALA / PC (Análisis Individual)
-# ===============================
 elif st.session_state.page == 'sala':
     st.header("🔍 Análisis por Computador")
     st.markdown("""
     Aquí puedes elegir un computador específico para ver en detalle cómo ha funcionado.
     Podrás observar sus temperaturas, velocidad del procesador y nivel de uso a lo largo del tiempo.
     """)
-
 
     DATA_DIR = "./data"
 
@@ -107,7 +98,6 @@ elif st.session_state.page == 'sala':
 
     df = pd.read_csv(os.path.join(sala_path, archivo), encoding="utf-8-sig")
 
-    # === Detectar CPU ===
     cpu_name = 'Desconocido'
     idx_cpu = df.apply(lambda row: row.astype(str).str.contains('CPU').any(), axis=1)
     if idx_cpu.any():
@@ -121,7 +111,6 @@ elif st.session_state.page == 'sala':
     df['CPU'] = cpu_name
     df['CPU_Short'] = clasificar_cpu(cpu_name)
 
-    # === Procesar ===
     if 'Date' in df.columns:
         df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
         if df['Date'].iloc[0] > df['Date'].iloc[-1]:
@@ -131,7 +120,9 @@ elif st.session_state.page == 'sala':
     df['Relojes núcleo (avg) [MHz]'] = pd.to_numeric(df['Relojes núcleo (avg) [MHz]'], errors='coerce')
     df['Uso núcleo (avg) [%]'] = pd.to_numeric(df['Uso núcleo (avg) [%]'], errors='coerce')
 
-    df['Tiempo'] = range(1, len(df) + 1)
+    df['Tiempo'] = df.index * 2
+
+    df_filtrado = df[df['Tiempo'] <= 10]
 
     fecha_inicio = df['Date'].min().strftime("%Y-%m-%d") if 'Date' in df.columns else 'Sin fecha'
 
@@ -143,15 +134,110 @@ elif st.session_state.page == 'sala':
     """)
 
     st.subheader("🌡️ Temperatura núcleo")
-    st.plotly_chart(graficas_sala.grafica_temperatura(df))
+    st.plotly_chart(graficas_sala.grafica_temperatura(df_filtrado))
 
     st.subheader("⏲️ Relojes núcleo")
-    st.plotly_chart(graficas_sala.grafica_relojes(df))
+    st.plotly_chart(graficas_sala.grafica_relojes(df_filtrado))
 
     st.subheader("💻 Uso núcleo")
-    st.plotly_chart(graficas_sala.grafica_uso(df))
+    st.plotly_chart(graficas_sala.grafica_uso(df_filtrado))
 
-# ===============================
+elif st.session_state.page == 'comparacion':
+    st.header("🔎 Comparación de Computadores")
+    st.markdown("""
+    En esta parte puedes seleccionar varios computadores y compararlos en gráficos interactivos.
+    Así puedes ver fácilmente las diferencias de temperatura, velocidad y uso entre ellos.
+    """)
+
+    DATA_DIR = "./data"
+
+    pcs = []
+    salas = [d for d in os.listdir(DATA_DIR) if os.path.isdir(os.path.join(DATA_DIR, d))]
+    for sala in salas:
+        sala_path = os.path.join(DATA_DIR, sala)
+        archivos = glob.glob(os.path.join(sala_path, "*.csv"))
+        for archivo in archivos:
+            pcs.append(f"{sala}/{os.path.basename(archivo)}")
+
+    seleccionados = st.multiselect(
+        "Selecciona entre 2 y 10 computadores para comparar:",
+        pcs
+    )
+
+    if len(seleccionados) < 2:
+        st.info("Selecciona al menos 2 computadores para comparar.")
+    elif len(seleccionados) > 10:
+        st.warning("Selecciona máximo 10 computadores.")
+    else:
+        dfs = []
+        for pc in seleccionados:
+            sala, archivo = pc.split("/")
+            archivo_path = os.path.join(DATA_DIR, sala, archivo)
+            df = pd.read_csv(archivo_path, encoding="utf-8-sig")
+
+            cpu_name = 'Desconocido'
+            idx_cpu = df.apply(lambda row: row.astype(str).str.contains('CPU').any(), axis=1)
+            if idx_cpu.any():
+                fila_cpu = df[idx_cpu].iloc[0]
+                for celda in fila_cpu:
+                    if isinstance(celda, str) and 'CPU' in celda:
+                        cpu_name = celda.strip()
+                        break
+                df = df[~idx_cpu]
+
+            df['CPU'] = clasificar_cpu(cpu_name)
+            df['Sala'] = sala
+            df['Archivo'] = archivo
+
+            df['Temperaturas núcleo (avg) [°C]'] = pd.to_numeric(df['Temperaturas núcleo (avg) [°C]'], errors='coerce')
+            df['Relojes núcleo (avg) [MHz]'] = pd.to_numeric(df['Relojes núcleo (avg) [MHz]'], errors='coerce')
+            df['Uso núcleo (avg) [%]'] = pd.to_numeric(df['Uso núcleo (avg) [%]'], errors='coerce')
+
+            if 'Date' in df.columns:
+                df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+                if df['Date'].iloc[0] > df['Date'].iloc[-1]:
+                    df = df.iloc[::-1].reset_index(drop=True)
+
+            df['Tiempo'] = range(0, len(df)*2, 2)
+            df = df[df['Tiempo'] <= 10]
+
+            df['PC'] = f"{sala}/{archivo}"
+
+            dfs.append(df)
+
+        df_comparacion = pd.concat(dfs, ignore_index=True)
+
+        st.subheader("🌡️ Comparación Temperatura vs Tiempo")
+        fig_temp = px.line(
+            df_comparacion,
+            x="Tiempo",
+            y="Temperaturas núcleo (avg) [°C]",
+            color="PC",
+            labels={"Temperaturas núcleo (avg) [°C]": "Temperatura [°C]"}
+        )
+        st.plotly_chart(fig_temp, use_container_width=True)
+
+        st.subheader("⏲️ Comparación Reloj vs Tiempo")
+        fig_reloj = px.line(
+            df_comparacion,
+            x="Tiempo",
+            y="Relojes núcleo (avg) [MHz]",
+            color="PC",
+            labels={"Relojes núcleo (avg) [MHz]": "Reloj [MHz]"}
+        )
+        st.plotly_chart(fig_reloj, use_container_width=True)
+
+        st.subheader("💻 Comparación Uso vs Tiempo")
+        fig_uso = px.line(
+            df_comparacion,
+            x="Tiempo",
+            y="Uso núcleo (avg) [%]",
+            color="PC",
+            labels={"Uso núcleo (avg) [%]": "Uso [%]"}
+        )
+        st.plotly_chart(fig_uso, use_container_width=True)
+
+    # ===============================
 # RESUMEN GLOBAL
 # ===============================
 elif st.session_state.page == 'resumen':
@@ -274,7 +360,8 @@ elif st.session_state.page == 'comparacion':
                 if df['Date'].iloc[0] > df['Date'].iloc[-1]:
                     df = df.iloc[::-1].reset_index(drop=True)
 
-            df['Tiempo'] = range(1, len(df) + 1)
+            df['Tiempo'] = range(0, len(df)*2, 2)  # si es cada 2 seg
+
             df['PC'] = f"{sala}/{archivo}"
 
             dfs.append(df)
@@ -408,5 +495,3 @@ elif st.session_state.page == 'info':
     
     **Versión:** `2.0`
     """)
-
-

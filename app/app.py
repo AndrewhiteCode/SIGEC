@@ -15,10 +15,10 @@ import graficas_sala
 st.set_page_config(page_title="SIGEC", layout="wide")
 
 st.markdown("""
-    <h1 style='text-align: center; color: #4CAF50; font-size: 48px;'>
-        🧮 S.I.G.E.C
+    <h1 style='text-align: center; color: #4CAF50; font-size: 72px;'>
+        🧮 S.I.G.E.C.
     </h1>
-    <h4 style='text-align: center;'>
+    <h4 style='text-align: center;font-size: 32px'>
         Sistema Interactivo para Graficación Estadística Computacional
     </h4>
 """, unsafe_allow_html=True)
